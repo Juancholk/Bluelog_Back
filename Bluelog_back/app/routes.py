@@ -2,6 +2,8 @@ from flask import Blueprint, request, jsonify
 from .models import db, User
 from bluetooth_comm import send_bluetooth_message
 from estadisticos import generate_statistics
+import csv
+from io import StringIO
 
 main = Blueprint('main', __name__)
 
@@ -75,3 +77,36 @@ def calculate_statistics():
     except Exception as e:
         #app.logger.error(f"Error generating statistics: {str(e)}")
         return jsonify({"error": "Internal server error"}), 500
+    
+@main.route('/upload_csv/<int:folder_id>', methods=['POST'])
+def upload_csv(folder_id):
+    try:
+        # Obtener el archivo CSV desde la solicitud
+        file = request.files['file']
+        
+        # Leer el contenido del archivo CSV
+        stream = StringIO(file.stream.read().decode('UTF-8'))
+        csv_reader = csv.DictReader(stream)
+
+        # Convertir el CSV en una lista de diccionarios (JSON)
+        csv_content = [row for row in csv_reader]
+
+        # Buscar el Folder por ID y almacenar el JSON directamente
+        folder = Folder.query.get(folder_id)
+        if folder:
+            folder.csv_data = csv_content  # No hace falta convertirlo, ya es JSON
+            db.session.commit()
+            return jsonify({'message': 'CSV uploaded and stored as JSON in folder'}), 200
+        else:
+            return jsonify({'error': 'Folder not found'}), 404
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+@main.route('/get_csv/<int:folder_id>', methods=['GET'])
+def get_csv(folder_id):
+    folder = Folder.query.get(folder_id)
+    if folder and folder.csv_data:
+        return jsonify({'csv_data': folder.csv_data}), 200  # No hace falta hacer json.loads
+    else:
+        return jsonify({'error': 'Folder or CSV not found'}), 404
+

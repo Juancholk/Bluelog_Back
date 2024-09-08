@@ -11,9 +11,10 @@ def create_app():
 
     # Inicializa la base de datos
     db.init_app(app)
-
     # Importa las rutas
     from .routes import main
     app.register_blueprint(main)
+    
+    
 
     return app

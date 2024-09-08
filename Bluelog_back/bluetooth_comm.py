@@ -21,7 +21,7 @@ def send_bluetooth_message(message):
         json_data_str = json.dumps(json_data) + "\n"  # Agregar un salto de línea al final para que el ESP32 lo detecte
         
         # Mostrar el JSON que se enviará
-        #print("JSON sent:", json_data_str)
+        print("JSON sent:", json_data_str)
         
         # Enviar el mensaje JSON al microcontrolador
         BT.write(json_data_str.encode('utf-8'))
