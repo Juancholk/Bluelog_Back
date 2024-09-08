@@ -9,6 +9,7 @@ class User(db.Model):
         return {
             'id': self.id,
             'username': self.username,
+            'password':self.password
         }
 class Folder(db.Model):
     id = db.Column(db.Integer, primary_key=True)

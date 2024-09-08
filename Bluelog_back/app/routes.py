@@ -4,6 +4,7 @@ from bluetooth_comm import send_bluetooth_message
 from estadisticos import generate_statistics
 import csv
 from io import StringIO
+from werkzeug.security import check_password_hash
 
 main = Blueprint('main', __name__)
 
@@ -110,3 +111,23 @@ def get_csv(folder_id):
     else:
         return jsonify({'error': 'Folder or CSV not found'}), 404
 
+@main.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    #print(username, password)
+    user = User.query.filter_by(username=username).first()
+    if user.password == password:
+        return jsonify({"message": "Login successful", "status": "success"})
+    else:
+        return jsonify({"message": "Invalid credentials", "status": "fail"}), 401
+
+
+@main.route('/check-db', methods=['GET'])
+def check_db():
+    users = User.query.all()
+    if users:
+        return jsonify([user.to_dict() for user in users])
+    else:
+        return jsonify({"message": "No users found"}), 404
