@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from .models import db, User
+from .models import db, User, Folder
 from bluetooth_comm import send_bluetooth_message
 from estadisticos import generate_statistics
 import csv
@@ -116,18 +116,27 @@ def login():
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
-    #print(username, password)
+
     user = User.query.filter_by(username=username).first()
-    if user.password == password:
-        return jsonify({"message": "Login successful", "status": "success"})
+
+    if user and user.password == password:
+        return jsonify({
+            "message": "Login successful", 
+            "status": "success",
+            "user_id": user.id  # Incluye el ID del usuario en la respuesta
+        })
     else:
         return jsonify({"message": "Invalid credentials", "status": "fail"}), 401
 
 
-@main.route('/check-db', methods=['GET'])
-def check_db():
-    users = User.query.all()
-    if users:
-        return jsonify([user.to_dict() for user in users])
-    else:
-        return jsonify({"message": "No users found"}), 404
+@main.route('/folders/<int:user_id>', methods=['GET'])
+def get_folders(user_id):
+    folders = Folder.query.filter_by(user_id=user_id).all()
+    folder_list = [{
+        'id': folder.id,
+        'name': folder.name,
+        'user_id': folder.user_id,
+        'csv_data': folder.csv_data,
+        'image_path': folder.image_path  # Make sure you're storing paths now
+    } for folder in folders]
+    return jsonify(folder_list), 200
