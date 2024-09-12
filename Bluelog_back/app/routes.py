@@ -2,6 +2,8 @@ from flask import Blueprint, request, jsonify, render_template, send_from_direct
 from .models import db, User, Folder
 from bluetooth_comm import send_bluetooth_message
 from estadisticos import generate_statistics
+from werkzeug.utils import secure_filename
+import os
 import csv
 from io import StringIO
 
@@ -18,33 +20,6 @@ def get_users():
     users = User.query.all()
     return jsonify([user.to_dict() for user in users])
 
-# Crear un nuevo usuario
-@main.route('/users', methods=['POST'])
-def create_user():
-    data = request.get_json()
-    new_user = User(username=data['username'], password=data['password'])
-    db.session.add(new_user)
-    db.session.commit()
-    return jsonify(new_user.to_dict()), 201
-
-# Actualizar un usuario
-@main.route('/users/<int:id>', methods=['PUT'])
-def update_user(id):
-    user = User.query.get_or_404(id)
-    data = request.get_json()
-    
-    user.username = data.get('username', user.username)
-    db.session.commit()
-    
-    return jsonify(user.to_dict())
-
-# Eliminar un usuario
-@main.route('/users/<int:id>', methods=['DELETE'])
-def delete_user(id):
-    user = User.query.get_or_404(id)
-    db.session.delete(user)
-    db.session.commit()
-    return jsonify({'message': 'User deleted'}), 204
 
 #Obtener json de un formulario
 @main.route('/submit-form', methods=['POST'])
@@ -139,7 +114,24 @@ def get_folders(user_id):
         'image_path': f'/imagenes/{folder.image_path}'  # Construye la URL relativa
     } for folder in folders]
     return jsonify(folder_list), 200
-@main.route('/imagenes/<path:filename>')
-def serve_image(filename):
-    # Accede a la carpeta de archivos estáticos a través del contexto de la aplicación actual
-    return send_from_directory(current_app.static_folder, filename) 
+
+@main.route('/folders', methods=['POST'])
+def create_folder():
+    data = request.form  # Obtén los datos del formulario (excepto el archivo)
+
+    new_folder = Folder(
+        name=data['name'],
+        user_id=data['user_id'],
+        csv_data=data['csv_data']
+    )
+    db.session.add(new_folder)
+    db.session.commit()
+    return jsonify(new_folder.to_dict()), 201
+
+# Eliminar una carpeta
+@main.route('/folders/<int:folder_id>', methods=['DELETE'])
+def delete_folder(folder_id):
+    folder = Folder.query.get_or_404(folder_id)
+    db.session.delete(folder)
+    db.session.commit()
+    return '', 204  # 204 No Content
