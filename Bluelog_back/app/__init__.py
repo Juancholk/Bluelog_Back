@@ -4,7 +4,7 @@ from flask_migrate import Migrate
 db = SQLAlchemy()
 migrate = Migrate() 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder='app/imagenes')
     
     # Configuración de la base de datos
     app.config.from_object('config.Config')
@@ -17,8 +17,6 @@ def create_app():
     
     # Importa las rutas
     from .routes import main
-    app.register_blueprint(main)
-    
-    
+    app.register_blueprint(main, url_prefix='/')  # Registra el blueprint con el prefijo de URL '/'
 
     return app

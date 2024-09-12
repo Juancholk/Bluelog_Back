@@ -2,10 +2,10 @@ import sqlite3
 import os
 
 # Ruta absoluta al archivo de la base de datos
-db_path = r'C:\Users\juanc\OneDrive\Documentos\GitHub\Bluelog_Backend\Bluelog_back\instance\mydatabase.db'
+db_path = r'Bluelog_back\instance\mydatabase.db'
 
 # Ruta a la carpeta de las imágenes
-image_folder_path = r'C:\Users\juanc\OneDrive\Documentos\GitHub\Bluelog_Backend\Bluelog_back\app\imagenes'
+image_folder_path = r'Bluelog_back\app\imagenes\paisaje.jpg'
 
 # Rutas a las imágenes específicas
 image1 = os.path.join(image_folder_path, 'paisaje.jpg')
@@ -18,8 +18,8 @@ try:
 
     # Datos de ejemplo para agregar, incluyendo la ruta de la imagen en lugar de los datos binarios
     folders = [
-        {'name': 'Cartagena', 'user_id': 1, 'csv_data': '{}', 'image_path': image1},
-        {'name': 'Tumaco', 'user_id': 1, 'csv_data': '{}', 'image_path': image2}
+        {'name': 'Guajira', 'user_id': 1, 'csv_data': '{}', 'image_path': image1},
+        {'name': 'San Andres', 'user_id': 1, 'csv_data': '{}', 'image_path': image2}
     ]
 
     # Insertar los datos en la tabla Folder

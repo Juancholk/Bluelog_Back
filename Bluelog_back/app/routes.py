@@ -1,10 +1,9 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, render_template, send_from_directory
 from .models import db, User, Folder
 from bluetooth_comm import send_bluetooth_message
 from estadisticos import generate_statistics
 import csv
 from io import StringIO
-from werkzeug.security import check_password_hash
 
 main = Blueprint('main', __name__)
 
@@ -137,6 +136,10 @@ def get_folders(user_id):
         'name': folder.name,
         'user_id': folder.user_id,
         'csv_data': folder.csv_data,
-        'image_path': folder.image_path  # Make sure you're storing paths now
+        'image_path': f'/imagenes/{folder.image_path}'  # Construye la URL relativa
     } for folder in folders]
     return jsonify(folder_list), 200
+@main.route('/imagenes/<path:filename>')
+def serve_image(filename):
+    # Accede a la carpeta de archivos estáticos a través del contexto de la aplicación actual
+    return send_from_directory(current_app.static_folder, filename) 
