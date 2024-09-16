@@ -1,9 +1,8 @@
 from flask import Blueprint, request, jsonify, render_template, send_from_directory
 from .models import db, User, Folder
 from bluetooth_comm import send_bluetooth_message
-from estadisticos import generate_statistics
 from werkzeug.utils import secure_filename
-import os
+import pandas as pd
 import csv
 from io import StringIO
 
@@ -40,17 +39,39 @@ def submit_form():
         'bluetooth_status': bt_response
     })
 
-@main.route('/estadistics', methods=['POST'])
-def calculate_statistics():
+@main.route('/estadistics/<int:folder_id>', methods=['POST'])
+def calculate_statistics(folder_id):
     try:
-        # Llamar a la función para generar estadísticas
-        statistics = generate_statistics()
-        return jsonify(statistics), 200
+        # Buscar el Folder por ID
+        folder = Folder.query.get(folder_id)
+        
+        if not folder or not folder.csv_data:
+            return jsonify({"error": "Folder or CSV not found"}), 404
+
+        # Convertir el CSV almacenado en la base de datos en un DataFrame de pandas
+        df = pd.DataFrame(folder.csv_data)
+
+        # Calcular estadísticas descriptivas
+        statistics = df.describe().round(2)
+
+        # Renombrar los índices
+        Estadisticos = statistics.rename(index={
+            'count': 'Conteo',
+            'mean': 'Media',
+            'std': 'Desviación',
+            'min': 'Mínimo',
+            '25%': 'Percentil 25',
+            '50%': 'Mediana',
+            '75%': 'Percentil 75',
+            'max': 'Máximo'
+        })
+
+        # Retornar las estadísticas en formato JSON
+        return jsonify(Estadisticos.to_dict()), 200
     
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 500
     except Exception as e:
-        #app.logger.error(f"Error generating statistics: {str(e)}")
         return jsonify({"error": "Internal server error"}), 500
     
 @main.route('/upload_csv/<int:folder_id>', methods=['POST'])
