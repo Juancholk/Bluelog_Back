@@ -50,10 +50,14 @@ def calculate_statistics(folder_id):
 
         # Convertir el CSV almacenado en la base de datos en un DataFrame de pandas
         df = pd.DataFrame(folder.csv_data)
-
+        print(df)
+         # Convertir las columnas relevantes a tipo numérico
+        df['Wave Height (m)'] = pd.to_numeric(df['Wave Height (m)'], errors='coerce')
+        df['Wave Period (s)'] = pd.to_numeric(df['Wave Period (s)'], errors='coerce')
+        df['Wave Direction (°)'] = pd.to_numeric(df['Wave Direction (°)'], errors='coerce')
         # Calcular estadísticas descriptivas
         statistics = df.describe().round(2)
-
+        print(statistics)
         # Renombrar los índices
         Estadisticos = statistics.rename(index={
             'count': 'Conteo',
